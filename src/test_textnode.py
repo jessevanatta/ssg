@@ -2,7 +2,6 @@ import unittest
 
 from textnode import TextNode, TextType
 
-
 class TestTextNode(unittest.TestCase):
     def test_type_eq(self):
         node = TextNode("This is a text node", TextType.BOLD)
@@ -10,7 +9,7 @@ class TestTextNode(unittest.TestCase):
         self.assertEqual(node, node2)
     
     def test_type_noteq(self):
-        node = TextNode("blah", TextType.NORMAL)
+        node = TextNode("blah", TextType.TEXT)
         node2 = TextNode("blah", TextType.ITALIC)
         self.assertNotEqual(node, node2)
 
@@ -23,8 +22,6 @@ class TestTextNode(unittest.TestCase):
         node = TextNode("blah", TextType.LINK)
         node2 = TextNode("blah", TextType.LINK)
         self.assertEqual(node, node2)
-    
-
 
 if __name__ == "__main__":
     unittest.main()
