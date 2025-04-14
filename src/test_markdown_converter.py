@@ -1,7 +1,7 @@
 import unittest
 
 from textnode import TextNode, TextType
-from markdown_converter import split_nodes_delimiter, extract_markdown_images_or_links, split_nodes_images_or_links, markdown_to_blocks
+from markdown_converter import split_nodes_delimiter, extract_markdown_images_or_links, split_nodes_images_or_links, markdown_to_blocks, BlockType, block_to_block_type, markdown_to_html_node
 
 class TestMarkdownConverter(unittest.TestCase):
     # def test_bold_wrap(self):
@@ -95,23 +95,176 @@ class TestMarkdownConverter(unittest.TestCase):
     #     ]
     #     self.assertEqual(expected, nodes)
 
-    def test_markdown_to_blocks(self):
+#     def test_markdown_to_blocks(self):
+#         md = """
+# This is **bloded**
+
+# Another with _ital_ and `code`
+# Same para new game
+
+# - list
+# - items
+# """
+#         blocks = markdown_to_blocks(md)
+#         self.assertEqual(
+#             blocks,
+#             [
+#                 "This is **bloded**", "Another with _ital_ and `code`\nSame para new game", "- list\n- items"
+#             ],
+#         )
+
+#     def test_block_type_multi(self):
+#         types = []
+#         md = """
+# # The Thing About Geese
+
+# Geese are really wild. Like, seriously crazy. Don't go near them, especially if you're carrying grain.
+
+# ## Not Your Average Bird
+
+# The typical winged creature will flee rapidly once they're disturbed by a human or other predator. Geese, however, are far more stubborn. President Obama once said:
+
+# >In these difficult times, it's important to remember that geese are extremely dangerous creatures to be around. Yes we can, but not if these horrific monsters are given the opportunity to rip your esophagus out.
+
+# ## Coming To Our Senses
+
+# Thanks to our friends at StackOverflow, we're knee-deep in development of an application that notifies you when geese are nearby. This allows you to act accordingly at a moment's notice so you and your family can stay safe. Here's a snippet of the code that makes the magic happen:
+
+# ```
+# def goose_detector(x, y, dist):
+#     position = (x, y)
+#     for i in range(dist):
+#         if Geese.GOOSE in position:
+#             send_notification("THERE IS A GOOSE NEARBY")
+#     return ""
+# ```
+
+# ## Things to do
+
+# Below is a list of what actions to take when you spot a goose (or geese).
+
+# 1. Stay calm and maintain eye contact with the creature(s).
+# 2. Do NOT approach the creature(s).
+# 3. Grab hold of any other humans in your immediate vicinity.
+# 4. Slowly back away from the creature(s), ensuring you do not break eye contact. They can smell fear.
+
+# ## Conclusion
+
+# Be aware. Stay safe. Avoid geese whenever possible. 
+# """
+#         blocks = markdown_to_blocks(md)
+#         for block in blocks:
+#             types.append(block_to_block_type(block))
+#         expected = [
+#             BlockType.HEADING,
+#             BlockType.PARAGRAPH,
+#             BlockType.HEADING,
+#             BlockType.PARAGRAPH,
+#             BlockType.QUOTE,
+#             BlockType.HEADING,
+#             BlockType.PARAGRAPH,
+#             BlockType.CODE,
+#             BlockType.HEADING,
+#             BlockType.PARAGRAPH,
+#             BlockType.O_LIST,
+#             BlockType.HEADING,
+#             BlockType.PARAGRAPH
+#         ]
+#         self.assertEqual(types, expected)
+
+    def test_paragraphs(self):
         md = """
-This is **bloded**
+This is **bolded** paragraph
+text in a p
+tag here
 
-Another with _ital_ and `code`
-Same para new game
+This is another paragraph with _italic_ text and `code` here
 
-- list
-- items
 """
-        blocks = markdown_to_blocks(md)
+        node = markdown_to_html_node(md)
+        html = node.to_html()
         self.assertEqual(
-            blocks,
-            [
-                "This is **bloded**", "Another with _ital_ and `code`\nSame para new game", "- list\n- items"
-            ],
+            html,
+            "<div><p>This is <b>bolded</b> paragraph text in a p tag here</p><p>This is another paragraph with <i>italic</i> text and <code>code</code> here</p></div>",
         )
+
+    def test_codeblock(self):
+        md = """
+```
+This is text that _should_ remain
+the **same** even with inline stuff
+```
+"""
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<div><pre><code>This is text that _should_ remain\nthe **same** even with inline stuff\n</code></pre></div>",
+        )
+
+    def test_headings(self):
+        md = """
+# head1
+
+## head2
+
+### head3
+
+#### head4
+
+##### head5
+
+###### head6
+"""
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<div><h1>head1</h1><h2>head2</h2><h3>head3</h3><h4>head4</h4><h5>head5</h5><h6>head6</h6></div>"
+        )
+
+    def test_aio(self):
+        md = """
+# Here, a Big Test
+
+Hey! [Here is a link.](https://google.com)
+
+## Second heading
+
+Some `inline code` and **bolded text.** Wow, _power._ Wise words:
+
+>This quote is dank.
+>It has a second line.
+
+### Third heading
+
+An ![alt texted image.](https://itch.io) What do you think about the order of this list?
+
+1. First
+2. Second
+3. Third
+
+Can you handle it without order?
+
+- Boom
+- Bap
+- Bong
+
+Finally, a little code block:
+
+```
+Booty
+bounce
+```
+"""
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.maxDiff = None
+        self.assertEqual(
+            html,
+             "<div><h1>Here, a Big Test</h1><p>Hey! <a href=\"https://google.com\">Here is a link.</a></p><h2>Second heading</h2><p>Some <code>inline code</code> and <b>bolded text.</b> Wow, <i>power.</i> Wise words:</p><blockquote><p>This quote is dank. It has a second line.</p></blockquote><h3>Third heading</h3><p>An <img src=\"https://itch.io\" alt=\"alt texted image.\"></img> What do you think about the order of this list?</p><ol><li>First</li><li>Second</li><li>Third</li></ol><p>Can you handle it without order?</p><ul><li>Boom</li><li>Bap</li><li>Bong</li></ul><p>Finally, a little code block:</p><pre><code>Booty\nbounce\n</code></pre></div>"
+             )
 
 if __name__ == "__main__":
     unittest.main()
+
