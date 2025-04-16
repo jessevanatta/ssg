@@ -158,7 +158,8 @@ def inline_to_children(text):
     nodes = text_to_textnodes(text)
     new_nodes = []
     for node in nodes:
-        new_nodes.append(text_node_to_html_node(node))
+        new_node = text_node_to_html_node(node)
+        new_nodes.append(new_node)
     return ParentNode("p", new_nodes)
 
 def text_to_heading(text):

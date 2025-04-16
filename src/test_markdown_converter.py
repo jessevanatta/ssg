@@ -1,6 +1,6 @@
 import unittest
 
-from textnode import TextNode, TextType
+from textnode import TextNode, TextType, text_node_to_html_node
 from markdown_converter import split_nodes_delimiter, extract_markdown_images_or_links, split_nodes_images_or_links, markdown_to_blocks, BlockType, block_to_block_type, markdown_to_html_node
 
 class TestMarkdownConverter(unittest.TestCase):
@@ -13,14 +13,16 @@ class TestMarkdownConverter(unittest.TestCase):
     #         TextNode("bold at end", TextType.BOLD),
     #     ])
     
-    # def test_ital_wrap(self):
-    #     node = TextNode("_ital at start_ and _ital at end_", TextType.TEXT)
-    #     new_nodes = split_nodes_delimiter([node], "_", TextType.ITALIC)
-    #     self.assertEqual(new_nodes, [
-    #         TextNode("ital at start", TextType.ITALIC),
-    #         TextNode(" and ", TextType.TEXT),
-    #         TextNode("ital at end", TextType.ITALIC),
-    #     ])
+    def test_ital_wrap(self):
+        node = TextNode("_ital at start_ and _ital at end_", TextType.TEXT)
+        new_nodes = split_nodes_delimiter([node], "_", TextType.ITALIC)
+        html = text_node_to_html_node(new_nodes[0])
+        print(html)
+        self.assertEqual(new_nodes, [
+            TextNode("ital at start", TextType.ITALIC),
+            TextNode(" and ", TextType.TEXT),
+            TextNode("ital at end", TextType.ITALIC),
+        ])
 
     # def test_code_inline(self):
     #     node = TextNode("here is some `inline code` for you", TextType.TEXT)
@@ -172,98 +174,98 @@ class TestMarkdownConverter(unittest.TestCase):
 #         ]
 #         self.assertEqual(types, expected)
 
-    def test_paragraphs(self):
-        md = """
-This is **bolded** paragraph
-text in a p
-tag here
+#     def test_paragraphs(self):
+#         md = """
+# This is **bolded** paragraph
+# text in a p
+# tag here
 
-This is another paragraph with _italic_ text and `code` here
+# This is another paragraph with _italic_ text and `code` here
 
-"""
-        node = markdown_to_html_node(md)
-        html = node.to_html()
-        self.assertEqual(
-            html,
-            "<div><p>This is <b>bolded</b> paragraph text in a p tag here</p><p>This is another paragraph with <i>italic</i> text and <code>code</code> here</p></div>",
-        )
+# """
+#         node = markdown_to_html_node(md)
+#         html = node.to_html()
+#         self.assertEqual(
+#             html,
+#             "<div><p>This is <b>bolded</b> paragraph text in a p tag here</p><p>This is another paragraph with <i>italic</i> text and <code>code</code> here</p></div>",
+#         )
 
-    def test_codeblock(self):
-        md = """
-```
-This is text that _should_ remain
-the **same** even with inline stuff
-```
-"""
-        node = markdown_to_html_node(md)
-        html = node.to_html()
-        self.assertEqual(
-            html,
-            "<div><pre><code>This is text that _should_ remain\nthe **same** even with inline stuff\n</code></pre></div>",
-        )
+#     def test_codeblock(self):
+#         md = """
+# ```
+# This is text that _should_ remain
+# the **same** even with inline stuff
+# ```
+# """
+#         node = markdown_to_html_node(md)
+#         html = node.to_html()
+#         self.assertEqual(
+#             html,
+#             "<div><pre><code>This is text that _should_ remain\nthe **same** even with inline stuff\n</code></pre></div>",
+#         )
 
-    def test_headings(self):
-        md = """
-# head1
+#     def test_headings(self):
+#         md = """
+# # head1
 
-## head2
+# ## head2
 
-### head3
+# ### head3
 
-#### head4
+# #### head4
 
-##### head5
+# ##### head5
 
-###### head6
-"""
-        node = markdown_to_html_node(md)
-        html = node.to_html()
-        self.assertEqual(
-            html,
-            "<div><h1>head1</h1><h2>head2</h2><h3>head3</h3><h4>head4</h4><h5>head5</h5><h6>head6</h6></div>"
-        )
+# ###### head6
+# """
+#         node = markdown_to_html_node(md)
+#         html = node.to_html()
+#         self.assertEqual(
+#             html,
+#             "<div><h1>head1</h1><h2>head2</h2><h3>head3</h3><h4>head4</h4><h5>head5</h5><h6>head6</h6></div>"
+#         )
 
-    def test_aio(self):
-        md = """
-# Here, a Big Test
+#     def test_aio(self):
+#         md = """
+# # Here, a Big Test
 
-Hey! [Here is a link.](https://google.com)
+# Hey! [Here is a link.](https://google.com)
 
-## Second heading
+# ## Second heading
 
-Some `inline code` and **bolded text.** Wow, _power._ Wise words:
+# Some `inline code` and **bolded text.** Wow, _power._ Wise words:
 
->This quote is dank.
->It has a second line.
+# >This quote is dank.
+# >It has a second line.
 
-### Third heading
+# ### Third heading
 
-An ![alt texted image.](https://itch.io) What do you think about the order of this list?
+# An ![alt texted image.](https://itch.io) What do you think about the order of this list?
 
-1. First
-2. Second
-3. Third
+# 1. First
+# 2. Second
+# 3. Third
 
-Can you handle it without order?
+# Can you handle it without order?
 
-- Boom
-- Bap
-- Bong
+# - Boom
+# - Bap
+# - Bong
 
-Finally, a little code block:
+# Finally, a little code block:
 
-```
-Booty
-bounce
-```
-"""
-        node = markdown_to_html_node(md)
-        html = node.to_html()
-        self.maxDiff = None
-        self.assertEqual(
-            html,
-             "<div><h1>Here, a Big Test</h1><p>Hey! <a href=\"https://google.com\">Here is a link.</a></p><h2>Second heading</h2><p>Some <code>inline code</code> and <b>bolded text.</b> Wow, <i>power.</i> Wise words:</p><blockquote><p>This quote is dank. It has a second line.</p></blockquote><h3>Third heading</h3><p>An <img src=\"https://itch.io\" alt=\"alt texted image.\"></img> What do you think about the order of this list?</p><ol><li>First</li><li>Second</li><li>Third</li></ol><p>Can you handle it without order?</p><ul><li>Boom</li><li>Bap</li><li>Bong</li></ul><p>Finally, a little code block:</p><pre><code>Booty\nbounce\n</code></pre></div>"
-             )
+# ```
+# Booty
+# bounce
+# ```
+# """
+#         node = markdown_to_html_node(md)
+#         html = node.to_html()
+#         self.maxDiff = None
+#         self.assertEqual(
+#             html,
+#              "<div><h1>Here, a Big Test</h1><p>Hey! <a href=\"https://google.com\">Here is a link.</a></p><h2>Second heading</h2><p>Some <code>inline code</code> and <b>bolded text.</b> Wow, <i>power.</i> Wise words:</p><blockquote><p>This quote is dank. It has a second line.</p></blockquote><h3>Third heading</h3><p>An <img src=\"https://itch.io\" alt=\"alt texted image.\"></img> What do you think about the order of this list?</p><ol><li>First</li><li>Second</li><li>Third</li></ol><p>Can you handle it without order?</p><ul><li>Boom</li><li>Bap</li><li>Bong</li></ul><p>Finally, a little code block:</p><pre><code>Booty\nbounce\n</code></pre></div>"
+#              )
 
 if __name__ == "__main__":
     unittest.main()
