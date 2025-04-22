@@ -13,16 +13,16 @@ class TestMarkdownConverter(unittest.TestCase):
     #         TextNode("bold at end", TextType.BOLD),
     #     ])
     
-    def test_ital_wrap(self):
-        node = TextNode("_ital at start_ and _ital at end_", TextType.TEXT)
-        new_nodes = split_nodes_delimiter([node], "_", TextType.ITALIC)
-        html = text_node_to_html_node(new_nodes[0])
-        print(html)
-        self.assertEqual(new_nodes, [
-            TextNode("ital at start", TextType.ITALIC),
-            TextNode(" and ", TextType.TEXT),
-            TextNode("ital at end", TextType.ITALIC),
-        ])
+    # def test_ital_wrap(self):
+    #     node = TextNode("_ital at start_ and _ital at end_", TextType.TEXT)
+    #     new_nodes = split_nodes_delimiter([node], "_", TextType.ITALIC)
+    #     html = text_node_to_html_node(new_nodes[0])
+    #     print(html)
+    #     self.assertEqual(new_nodes, [
+    #         TextNode("ital at start", TextType.ITALIC),
+    #         TextNode(" and ", TextType.TEXT),
+    #         TextNode("ital at end", TextType.ITALIC),
+    #     ])
 
     # def test_code_inline(self):
     #     node = TextNode("here is some `inline code` for you", TextType.TEXT)

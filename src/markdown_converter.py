@@ -182,7 +182,17 @@ def list_to_children(text, _type):
     children = []
     split = text.split("\n")
     for s in split:
-        children.append(LeafNode("li", s[start:]))
+        s_text = s[start:]
+        if s_text[0] == "[":
+            extraction = extract_markdown_images_or_links(s_text)
+            this_node = ParentNode("li", [LeafNode("a", extraction[0][0], {"href": f"{extraction[0][1]}"})])
+        else:
+            nodes = text_to_textnodes(s_text)
+            subchildren = []
+            for node in nodes:
+                subchildren.append(text_node_to_html_node(node))
+            this_node = ParentNode("li", subchildren)
+        children.append(this_node)
     return ParentNode(tag, children)
 
 def block_to_html_node(block, _type):
