@@ -171,7 +171,6 @@ def text_to_heading(text):
             hash_count += 1
     content = text.replace("#", "").replace("\n", "").strip()
     nodes = text_to_textnodes(content)
-    print(nodes)
     subchildren = []
     for node in nodes:
         subchildren.append(text_node_to_html_node(node))
