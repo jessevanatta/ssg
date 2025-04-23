@@ -6,13 +6,11 @@ from markdown_converter import *
 linebreak = "------------------------------------"
 astbreak = "************************************"
 
-def refresh_public(src, dst):
-    # Delete destination dir if it exists
+def copy_static_files(src, dst):
+    # Delete and recreate destination 
     if os.path.exists(dst):
         shutil.rmtree(dst)
         print(f"Deleted {dst}")
-
-    # Create destination dir
     os.mkdir(dst)
     print(f"Recreated {dst}")
     print(linebreak)
@@ -20,10 +18,9 @@ def refresh_public(src, dst):
     # Get list of paths in source
     source_list = os.listdir(src)
 
-    # Loop over list and recurse this func to copy items
+    # Copy items
     for item in source_list:
         item_path = os.path.join(src, item)
-        # Copy item
         if os.path.isfile(item_path):
             print(f"Copying {item_path} to {dst}...")
             shutil.copy(item_path, dst)
@@ -34,8 +31,30 @@ def refresh_public(src, dst):
             new_dir = os.path.join(dst, item)
             if not os.path.exists(new_dir):
                 os.mkdir(new_dir)
-            print(f"Entering directory {current_dir}")
-            refresh_public(current_dir, new_dir)
+            print(f"Entering source directory {current_dir}")
+            copy_static_files(current_dir, new_dir)
+
+def generate_content(src, dst):
+    tmpl = "./template.html"
+    
+    # Get list of paths in source
+    source_list = os.listdir(src)
+
+    # Generate pages
+    for item in source_list:
+        item_path = os.path.join(src, item)
+        if os.path.isfile(item_path):
+            print(f"Generating HTML page for {item_path}...")
+            generate_page(item_path, tmpl, dst)
+            print(f"New page: {os.path.join(dst, os.listdir(dst)[0])}")
+            print(linebreak)
+        else:
+            current_dir = os.path.join(src, item)
+            new_dir = os.path.join(dst, item)
+            if not os.path.exists(new_dir):
+                os.mkdir(new_dir)
+            print(f"Entering source directory {current_dir}")    
+            generate_content(current_dir, new_dir)
 
 def extract_title(markdown):
     title = markdown.split("\n")[0]
@@ -45,7 +64,6 @@ def extract_title(markdown):
     return title.lstrip("#").strip()
 
 def generate_page(from_path, template_path, dest_path):
-    print(f"Generating page from {from_path} to {dest_path} using {template_path}")
     md = open(from_path).read()
     template = open(template_path).read()
     title = extract_title(md)
@@ -59,24 +77,20 @@ def generate_page(from_path, template_path, dest_path):
     page_file.close()
 
 def main():
-    public_complete = False
-
-    # Refresh public directory with source tree
-    refresh_source = "./static"
-    refresh_destination = "./public"
-    refresh_public(refresh_source, refresh_destination)
-
-    # Verify tree match
-    source_length = len(os.listdir(refresh_source))
-    destination_length = len(os.listdir(refresh_destination))
-    if source_length == destination_length:
-        public_complete = True
-        print("Successfully copied all data.")
-        print(astbreak)
-    
-    # Generate index.html
-    if public_complete:
-        generate_page("./content/index.md", "./template.html", "./public")
-        
+    # Copy static files to public
+    print(astbreak)
+    print("Beginning copy of static files.")
+    print(linebreak)
+    copy_static_files("./static", "./public")
+    print("Finished copying static files.")
+    print(astbreak)
+   
+    # Generate pages
+    print(astbreak)
+    print("Beginning generation of HTML pages.")
+    print(linebreak)
+    generate_content("./content", "./public")
+    print(f"Finished generating HTML pages.")
+    print(astbreak)
 
 main()

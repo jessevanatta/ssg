@@ -170,7 +170,12 @@ def text_to_heading(text):
         else:
             hash_count += 1
     content = text.replace("#", "").replace("\n", "").strip()
-    return f"h{hash_count}", content
+    nodes = text_to_textnodes(content)
+    print(nodes)
+    subchildren = []
+    for node in nodes:
+        subchildren.append(text_node_to_html_node(node))
+    return ParentNode(f"h{hash_count}", subchildren)
 
 def list_to_children(text, _type):
     if _type == BlockType.U_LIST:
@@ -182,11 +187,13 @@ def list_to_children(text, _type):
     children = []
     split = text.split("\n")
     for s in split:
+        # If list item is a link
         s_text = s[start:]
         if s_text[0] == "[":
             extraction = extract_markdown_images_or_links(s_text)
             this_node = ParentNode("li", [LeafNode("a", extraction[0][0], {"href": f"{extraction[0][1]}"})])
         else:
+            # Format list item
             nodes = text_to_textnodes(s_text)
             subchildren = []
             for node in nodes:
@@ -203,7 +210,7 @@ def block_to_html_node(block, _type):
             node = inline_to_children(content)
 
         case BlockType.HEADING:
-            node = LeafNode(*text_to_heading(block))
+            node = text_to_heading(block)
 
         case BlockType.CODE:
             content = block.strip("```").lstrip("\n")
@@ -213,8 +220,7 @@ def block_to_html_node(block, _type):
 
         case BlockType.QUOTE:
             content = block.replace(">", "").replace("\n", " ").strip()
-            child = LeafNode("p", content)
-            node = ParentNode("blockquote", [child])
+            node = LeafNode("blockquote", content)
 
         case BlockType.U_LIST | BlockType.O_LIST:
             node = list_to_children(block, _type)
